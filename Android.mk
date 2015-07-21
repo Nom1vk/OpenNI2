@@ -37,3 +37,4 @@ include $(call all-subdir-makefiles)
 
 # Cleanup the local variables
 OPENNI2_CFLAGS := 
+
