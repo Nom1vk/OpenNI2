@@ -18,7 +18,7 @@
 # *** 
 
 # Android should be >= v2.3
-APP_PLATFORM := android-9
+APP_PLATFORM := android-21
 
 # Use ARM v7a instruction set
 APP_ABI := armeabi-v7a

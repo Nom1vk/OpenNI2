@@ -102,33 +102,46 @@ if plat == 'android':
     ndkDir = os.environ['NDK_ROOT']
 
     buildDir = 'AndroidBuild'
-    if os.path.isdir(buildDir):
+    if os.path.isdir(buildDir+'/jni'):
         shutil.rmtree(buildDir)
 
     outputDir = 'OpenNI-android-' + strVersion
     if os.path.isdir(outputDir):
-        shutil.rmtree(outputDir)
-
+         shutil.rmtree(outputDir)
+    
+    os.makedirs(outputDir)
     os.makedirs(buildDir + '/jni')
-    os.symlink('../../../', buildDir + '/jni/OpenNI2')
+    shutil.copytree('../Source', buildDir + '/jni/OpenNI2/Source')
+    shutil.copytree('../Include', buildDir + '/jni/OpenNI2/Include')
+    shutil.copytree('../ThirdParty', buildDir + '/jni/OpenNI2/ThirdParty')
+    shutil.copytree('../Wrappers', buildDir + '/jni/OpenNI2/Wrappers')
+    shutil.copy('../Makefile', buildDir + '/jni/OpenNI2')
+    shutil.copy('../Android.mk', buildDir + '/jni/OpenNI2')
+    shutil.copy('../Application.mk', buildDir + '/jni/OpenNI2')
+    
     shutil.copy('../Android.mk', buildDir + '/jni')
     shutil.copy('../Application.mk', buildDir + '/jni')
-    rc = subprocess.call([ ndkDir + '/ndk-build', '-C', buildDir, '-j8' ])
+    rc = subprocess.call([ ndkDir + '/ndk-build.cmd', '-C', buildDir, '-j8' ])
     if rc != 0:
         print 'Build failed!'
         sys.exit(3)
 
     finalFile = finalDir + '/' + outputDir + '.tar'
     
-    shutil.move(buildDir + '/libs/armeabi-v7a', outputDir)
-    
     # add config files
-    shutil.copy('../Config/OpenNI.ini', outputDir)
-    shutil.copy('../Config/OpenNI2/Drivers/PS1080.ini', outputDir)
-
-    print('Creating archive ' + finalFile)
-    subprocess.check_call(['tar', '-cf', finalFile, outputDir])
-
+    
+    
+    if platform.system() == 'Linux':
+        shutil.copytree(buildDir + '/libs/armeabi-v7a', outputDir)
+        shutil.copy('../Config/OpenNI.ini', outputDir)
+        shutil.copy('../Config/OpenNI2/Drivers/PS1080.ini', outputDir)
+        print('Creating archive ' + finalFile)
+        subprocess.check_call(['tar', '-cf', finalFile, outputDir])
+    elif platform.system() == 'Windows':
+        shutil.copytree(buildDir + '/libs/armeabi-v7a', outputDir+'/libs/armeabi-v7a')
+        shutil.copytree(buildDir + '/jni/OpenNI2/Include', outputDir + '/Include')
+        shutil.copy('../Config/OpenNI.ini', outputDir+'/libs/armeabi-v7a')
+        shutil.copy('../Config/OpenNI2/Drivers/PS1080.ini', outputDir+'/libs/armeabi-v7a')
 elif platform.system() == 'Windows':
     import win32con,pywintypes,win32api,platform
     
